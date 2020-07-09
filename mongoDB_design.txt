@@ -1,0 +1,47 @@
+MongoDB Structure  -> (DB - Collection)
+IP: 211.253.236.72:27017
+
+(sensor - device) - 센서정보
+{
+        "type": "physical",    #실제/가상
+        "dev_name": "lm35_1",
+        "sensor_name": "lm35",    #센서 제품명
+        "location": "school",
+        "delay_time": "1",    #초 단위
+        "data_type": "temperature",
+        "value_type": "double",    #int, double 등
+        "valid_max": "100",
+        "valid_min": "0"
+}
+
+(sensor - data) - 센서 데이터
+{
+        "date": int(datetime.now().strftime('%Y%m%d%H%M%S%f')[:19]),
+        "dev_name": dname
+        "data": value
+}
+
+
+(sensor - summary) - 센서 정보 요약
+{
+        "date": int(datetime.now().strftime('%Y%m%d%H%M%S%f')[:19]),
+        "dev_name": dname
+        "max": value
+        "min": value
+        "avg": value
+}
+
+
+
+----------------------------------------------------------------------------------------
+Redis Structure  -> ( Key:Value )
+IP: 211.253.236.72:6379
+
+(dname:data)
+data:
+{
+        "cnt": int
+        "max_length": int
+        "lookup": list
+        "heap": list (heap구조)
+}
