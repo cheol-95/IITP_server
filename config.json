@@ -1,0 +1,15 @@
+{
+        "fileset": {
+                        "name": "April_sensor_data.csv",
+                        "length": 100,
+                        "summary_count": 20
+        },
+        "server": {
+                        "host": "211.253.236.75",
+                        "port": {
+                                "celery": "6379",
+                                "mongo": "27017",
+                                "redis": "6379"
+                }
+        }
+}
