@@ -13,26 +13,16 @@ config = ConfigBuilder().parse_config('../../config.json')
 
 HOST = config.server.host
 PORT = config.server.port
-DB=0
+DB = config.server.db
+
 app = Celery(
         'tasks', backend='redis://' + HOST+ ':' + PORT.celery +'/' + str(DB),
-        broker='redis://' + HOST +':' + PORT.redis +'/' + str(DB)
+        broker='redis://' + HOST +':' + PORT.redis +'/' + DB
         )
 conn = MongoClient(HOST+':'+PORT.mongo)
 db = conn.sensor
-
 init = {"cnt":0, "heap":[], "lookup":[], "max_length":config.fileset.summary_count, "make_heap": -1, "insert": -1}
 
-'''
-def _main():
-    POOL = redis.ConnectionPool(host=HOST, port=PORT.redis, db=DB)
-    try:
-        rconn = redis.Redis(connection_pool=POOL)
-        rconn.ping()
-        print ("Redis is connected!")
-    except redis.ConnectionError:
-        print ("Redis connection error!")
-'''
 POOL = redis.ConnectionPool(host=HOST, port=PORT.redis, db=DB)
 try:
     rconn = redis.Redis(connection_pool=POOL)
@@ -40,6 +30,10 @@ try:
     print ("Redis is connected!")
 except redis.ConnectionError:
    print ("Redis connection error!")
+
+result = list(db.device.find({}, {'dev_name':1}))
+names = [doc['dev_name'] for doc in result]
+rconn.set('regist_sensor', json.dumps(names))
 
 @app.task
 def ping_celery():
@@ -55,7 +49,6 @@ def insert(dname, value):
 @app.task
 def make_heap(doc):
     doc = json.loads(doc)
-    #rconn = redis.Redis(connection_pool=POOL)
     data = json.loads(rconn.get(doc["dev_name"]))
     '''
     if data['cnt']+1 > data['max_length']:
@@ -77,7 +70,6 @@ def make_heap(doc):
         init["cnt"] = data['cnt']        
         init["make_heap"] = data['cnt']
         rconn.set(doc["dev_name"], json.dumps(init))
-    print(json.loads(rconn.get(doc["dev_name"])))
 
 @app.task
 def insert_summary(summary_data):
@@ -89,10 +81,8 @@ def insert_summary(summary_data):
     db.summary.insert(doc)
     print('insert_summary')
 
-
 @app.task
 def maxmin(dname, flag):
-    #rconn = redis.Redis(connection_pool=POOL)
     if flag == True:
         rname = dname+'summary'
         tmp = json.loads(rconn.get(rname))
@@ -112,11 +102,15 @@ def summary():
     return str(json.dumps(doc_list, default=json_util.default))
 
 @app.task
-def get_sname():
-    li = list(db.device.find( {}, {'dev_name':1} ))
-    names = []
-    for sensor in li:
-        names.append(sensor['dev_name'])
+def getSensorInfo_Mongo():
+    result = list(db.device.find({}, {'dev_name':1}))
+    names = [doc['dev_name'] for doc in result]
+    return str(json.dumps(names, default=json_util.default))
+
+@app.task
+def getSensorInfo_Redis():
+    names = rconn.get('regist_sensor')
+    names = json.loads(names)
     return str(json.dumps(names, default=json_util.default))
 
 @app.task
