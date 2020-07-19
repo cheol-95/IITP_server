@@ -90,7 +90,7 @@ def maxmin(dname, flag):
         tmp = json.loads(rconn.get(dname))
     heap = tmp["heap"]
     length = len(tmp["lookup"])
-    print(sum(tmp["lookup"]), length)
+    #print(sum(tmp["lookup"]), length)
 
     avg = sum(tmp["lookup"])/length
     res = [heap, heapq.nlargest(1,heap)[0][0], heapq.nsmallest(1,heap)[0][0], avg]
@@ -101,16 +101,28 @@ def summary():
     doc_list = list(db.summary.find( {}, {'_id':0}))
     return str(json.dumps(doc_list, default=json_util.default))
 
+et_mongo = 0
 @app.task
 def getSensorInfo_Mongo():
+    global et_mongo
+    t0 = time.clock()
     result = list(db.device.find({}, {'dev_name':1}))
+    t1 = time.clock() - t0
+    et_mongo = et_mongo + t1
+    print ("access device mongo = {}, {}".format(t1, et_mongo))
     names = [doc['dev_name'] for doc in result]
     return str(json.dumps(names, default=json_util.default))
 
+et_redis = 0
 @app.task
 def getSensorInfo_Redis():
+    global et_redis
+    t0 = time.clock()
     names = rconn.get('regist_sensor')
     names = json.loads(names)
+    t1 = time.clock() - t0
+    et_redis = et_redis + t1
+    print ("access device redis = {}, {}".format(t1, et_redis))
     return str(json.dumps(names, default=json_util.default))
 
 @app.task

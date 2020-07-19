@@ -32,7 +32,7 @@ def insert_key(data):
         db.keys.insert(doc)
 
 @app.task
-def kfind(value):
+def get_keyList(value):
     kList = []
     if(value == None):
         li = list(db.keys.find({},{ 'key':1 }))
@@ -47,13 +47,14 @@ def kfind(value):
     return str(json.dumps(kList, default=json_util.default))
 
 @app.task
-def find(key, value):
+def get_sensorInfo(key, value):
     if(key == None):
         li = list(db.device.find({}))
     else:
         if(key == '_id'):
             value = ObjectId(value)
         li = list(db.device.find({ key:value }))
+    print(f'탐색된 센서의 개수: {len(li)}')
     return str(json.dumps(li, default=json_util.default))
 
 @app.task
