@@ -109,7 +109,7 @@ def getSensorInfo_Mongo():
     result = list(db.device.find({}, {'dev_name':1}))
     t1 = time.clock() - t0
     et_mongo = et_mongo + t1
-    print ("access device mongo = {}, {}".format(t1, et_mongo))
+    #print ("access device mongo = {}, {}".format(t1, et_mongo))
     names = [doc['dev_name'] for doc in result]
     return str(json.dumps(names, default=json_util.default))
 
@@ -122,7 +122,7 @@ def getSensorInfo_Redis():
     names = json.loads(names)
     t1 = time.clock() - t0
     et_redis = et_redis + t1
-    print ("access device redis = {}, {}".format(t1, et_redis))
+    #print ("access device redis = {}, {}".format(t1, et_redis))
     return str(json.dumps(names, default=json_util.default))
 
 @app.task
