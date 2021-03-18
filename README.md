@@ -7,7 +7,6 @@
 - Celery v4.4.5
 - mongoDB v3.6.3
 - Redis v4.0.9
-- RabbitMQ
 - Bson
 
 **Server**
